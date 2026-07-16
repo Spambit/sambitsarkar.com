@@ -17,7 +17,7 @@ export function Footer() {
               LinkedIn
             </a>
             <a
-              href="https://github.com/Spambit"
+              href="https://github.com/Spambit/sambitsarkar.com"
               target="_blank"
               rel="noopener noreferrer"
               className="footer-link"
