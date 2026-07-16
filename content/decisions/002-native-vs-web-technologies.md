@@ -4,6 +4,7 @@ number: "002"
 date: "2026-07-14"
 status: "Accepted"
 category: "Mobile"
+stage: "draft"
 summary: "Evaluating when to choose native platform development over cross-platform or web technologies for mobile applications."
 tags: ["mobile", "architecture", "native", "cross-platform"]
 ---

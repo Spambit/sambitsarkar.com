@@ -1,6 +1,7 @@
 ---
 title: "Why Most Architecture Reviews Fail"
 date: "2026-07-13"
+stage: "draft"
 summary: "Architecture reviews often devolve into bikeshedding or rubber-stamping. Here's what separates effective reviews from theater."
 tags: ["architecture", "process", "teams"]
 ---

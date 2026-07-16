@@ -4,6 +4,7 @@ number: "003"
 date: "2026-07-12"
 status: "Accepted"
 category: "Mobile"
+stage: "draft"
 summary: "Offline-first architectures require careful conflict resolution strategies. This documents the trade-offs between approaches."
 tags: ["mobile", "sync", "offline", "architecture"]
 ---

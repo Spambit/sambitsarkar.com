@@ -4,6 +4,7 @@ number: "005"
 date: "2026-07-08"
 status: "Accepted"
 category: "AI"
+stage: "draft"
 summary: "Framework for deciding when to build AI/ML capabilities in-house versus integrating third-party AI services."
 tags: ["ai", "architecture", "build-vs-buy"]
 ---

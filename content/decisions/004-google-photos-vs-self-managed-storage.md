@@ -4,6 +4,7 @@ number: "004"
 date: "2026-07-10"
 status: "Proposed"
 category: "Projects"
+stage: "draft"
 summary: "Evaluating cloud photo services against self-managed archival storage for long-term personal photo preservation."
 tags: ["cloud", "storage", "photos", "archival"]
 ---

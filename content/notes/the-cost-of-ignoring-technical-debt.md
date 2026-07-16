@@ -1,6 +1,7 @@
 ---
 title: "The Cost Of Ignoring Technical Debt"
 date: "2026-07-11"
+stage: "draft"
 summary: "Technical debt is not a backlog item — it's compound interest on every future feature. Here's how to quantify and communicate it."
 tags: ["architecture", "technical-debt", "modernization"]
 ---

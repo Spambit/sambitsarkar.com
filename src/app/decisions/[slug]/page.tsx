@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { getDecision, getDecisions } from "@/lib/content";
+import { getDecision, getDecisions, getAllDecisionSlugs } from "@/lib/content";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
-  return getDecisions().map((d) => ({ slug: d.meta.slug }));
+  return getAllDecisionSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

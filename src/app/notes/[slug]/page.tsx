@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
-import { getNote, getNotes } from "@/lib/content";
+import { getNote, getNotes, getAllNoteSlugs } from "@/lib/content";
 import { MarkdownRenderer } from "@/components/MarkdownRenderer";
 
+export const dynamicParams = false;
+
 export function generateStaticParams() {
-  return getNotes().map((n) => ({ slug: n.meta.slug }));
+  return getAllNoteSlugs().map((slug) => ({ slug }));
 }
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }) {

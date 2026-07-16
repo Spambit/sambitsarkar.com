@@ -12,6 +12,7 @@ export interface ContentMeta {
   number?: string;
   category?: string;
   status?: string;
+  stage?: "draft" | "published";
   tags?: string[];
 }
 
@@ -41,6 +42,7 @@ function getContentFromDir(dir: string): ContentItem[] {
           number: data.number || undefined,
           category: data.category || undefined,
           status: data.status || undefined,
+          stage: data.stage || "draft",
           tags: data.tags || undefined,
         },
         content,
@@ -53,17 +55,33 @@ function getContentFromDir(dir: string): ContentItem[] {
 }
 
 export function getDecisions(): ContentItem[] {
-  return getContentFromDir("decisions");
+  return getContentFromDir("decisions").filter(
+    (d) => d.meta.stage === "published"
+  );
+}
+
+export function getAllDecisionSlugs(): string[] {
+  return getContentFromDir("decisions").map((d) => d.meta.slug);
 }
 
 export function getDecision(slug: string): ContentItem | undefined {
-  return getDecisions().find((d) => d.meta.slug === slug);
+  return getContentFromDir("decisions").find(
+    (d) => d.meta.slug === slug && d.meta.stage === "published"
+  );
 }
 
 export function getNotes(): ContentItem[] {
-  return getContentFromDir("notes");
+  return getContentFromDir("notes").filter(
+    (n) => n.meta.stage === "published"
+  );
+}
+
+export function getAllNoteSlugs(): string[] {
+  return getContentFromDir("notes").map((n) => n.meta.slug);
 }
 
 export function getNote(slug: string): ContentItem | undefined {
-  return getNotes().find((n) => n.meta.slug === slug);
+  return getContentFromDir("notes").find(
+    (n) => n.meta.slug === slug && n.meta.stage === "published"
+  );
 }

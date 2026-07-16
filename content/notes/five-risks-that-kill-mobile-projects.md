@@ -1,6 +1,7 @@
 ---
 title: "5 Risks That Kill Mobile Projects"
 date: "2026-07-15"
+stage: "draft"
 summary: "The most common risks in mobile projects are not technical — they are architectural decisions made too early or too late."
 tags: ["mobile", "risk", "architecture"]
 ---
