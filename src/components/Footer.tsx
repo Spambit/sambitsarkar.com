@@ -9,6 +9,12 @@ export function Footer() {
           </p>
           <div className="flex gap-4">
             <a
+              href="mailto:contact@sambitsarkar.com"
+              className="footer-link"
+            >
+              Email
+            </a>
+            <a
               href="https://www.linkedin.com/in/sambit-sarkar-4835b318/"
               target="_blank"
               rel="noopener noreferrer"
