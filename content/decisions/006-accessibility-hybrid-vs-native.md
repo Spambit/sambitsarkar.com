@@ -1,6 +1,6 @@
 ---
 title: "Accessibility: Hybrid Apps vs Native Apps"
-number: "006"
+number: "002"
 date: "2026-07-16"
 status: "Accepted"
 category: "Mobile"
