@@ -1,6 +1,6 @@
 ---
 title: "AI Features: Build vs Buy"
-number: "005"
+number: "006"
 date: "2026-07-08"
 status: "Accepted"
 category: "AI"

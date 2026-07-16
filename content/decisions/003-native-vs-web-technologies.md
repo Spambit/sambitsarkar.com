@@ -1,6 +1,6 @@
 ---
 title: "Native vs Web Technologies for Mobile"
-number: "002"
+number: "003"
 date: "2026-07-14"
 status: "Accepted"
 category: "Mobile"

@@ -1,6 +1,6 @@
 ---
 title: "Designing Offline Sync"
-number: "003"
+number: "004"
 date: "2026-07-12"
 status: "Accepted"
 category: "Mobile"

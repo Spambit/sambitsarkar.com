@@ -1,6 +1,6 @@
 ---
 title: "Google Photos vs Self-Managed Archival Storage"
-number: "004"
+number: "005"
 date: "2026-07-10"
 status: "Proposed"
 category: "Projects"
