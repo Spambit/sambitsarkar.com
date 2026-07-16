@@ -5,6 +5,7 @@ date: "2026-07-16"
 status: "Accepted"
 category: "Architecture"
 stage: "published"
+order: 1
 summary: "Most architecture knowledge is trapped inside organizations and disappears over time. This is why I chose to document it publicly."
 tags: ["architecture", "adr", "documentation"]
 ---

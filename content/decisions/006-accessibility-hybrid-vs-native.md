@@ -5,6 +5,7 @@ date: "2026-07-16"
 status: "Accepted"
 category: "Mobile"
 stage: "published"
+order: 2
 summary: "Accessibility in mobile apps is not optional — but the approach differs dramatically between hybrid and native, and between greenfield and legacy. Here's what actually works in practice."
 tags: ["mobile", "accessibility", "hybrid", "native"]
 ---

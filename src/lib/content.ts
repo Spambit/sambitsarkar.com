@@ -13,6 +13,7 @@ export interface ContentMeta {
   category?: string;
   status?: string;
   stage?: "draft" | "published";
+  order?: number;
   tags?: string[];
 }
 
@@ -43,6 +44,7 @@ function getContentFromDir(dir: string): ContentItem[] {
           category: data.category || undefined,
           status: data.status || undefined,
           stage: data.stage || "draft",
+          order: data.order || undefined,
           tags: data.tags || undefined,
         },
         content,
@@ -55,9 +57,23 @@ function getContentFromDir(dir: string): ContentItem[] {
 }
 
 export function getDecisions(): ContentItem[] {
-  return getContentFromDir("decisions").filter(
-    (d) => d.meta.stage === "published"
-  );
+  return getContentFromDir("decisions")
+    .filter((d) => d.meta.stage === "published")
+    .sort((a, b) => {
+      if (a.meta.order !== undefined && b.meta.order !== undefined) {
+        return a.meta.order - b.meta.order;
+      }
+      return new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime();
+    });
+}
+
+export function getDraftDecisions(): ContentItem[] {
+  return getContentFromDir("decisions")
+    .filter((d) => d.meta.stage !== "published")
+    .sort(
+      (a, b) =>
+        new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
+    );
 }
 
 export function getAllDecisionSlugs(): string[] {
@@ -71,9 +87,23 @@ export function getDecision(slug: string): ContentItem | undefined {
 }
 
 export function getNotes(): ContentItem[] {
-  return getContentFromDir("notes").filter(
-    (n) => n.meta.stage === "published"
-  );
+  return getContentFromDir("notes")
+    .filter((n) => n.meta.stage === "published")
+    .sort((a, b) => {
+      if (a.meta.order !== undefined && b.meta.order !== undefined) {
+        return a.meta.order - b.meta.order;
+      }
+      return new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime();
+    });
+}
+
+export function getDraftNotes(): ContentItem[] {
+  return getContentFromDir("notes")
+    .filter((n) => n.meta.stage !== "published")
+    .sort(
+      (a, b) =>
+        new Date(b.meta.date).getTime() - new Date(a.meta.date).getTime()
+    );
 }
 
 export function getAllNoteSlugs(): string[] {

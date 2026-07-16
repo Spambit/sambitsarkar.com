@@ -1,36 +1,34 @@
+import { remark } from "remark";
+import remarkHtml from "remark-html";
+import remarkGfm from "remark-gfm";
+
 interface MarkdownRendererProps {
   content: string;
 }
 
+function slugify(text: string): string {
+  return text
+    .toLowerCase()
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+}
+
+function addHeadingIds(html: string): string {
+  return html.replace(
+    /<(h[1-3])>(.*?)<\/h[1-3]>/g,
+    (_, tag, content) => {
+      const plainText = content.replace(/<[^>]+>/g, "");
+      const id = slugify(plainText);
+      return `<${tag} id="${id}">${content}</${tag}>`;
+    }
+  );
+}
+
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
-  // Simple markdown to HTML conversion for common patterns
-  const html = content
-    // Headers
-    .replace(/^### (.*$)/gm, '<h3>$1</h3>')
-    .replace(/^## (.*$)/gm, '<h2>$1</h2>')
-    .replace(/^# (.*$)/gm, '<h1>$1</h1>')
-    // Bold and italic
-    .replace(/\*\*\*(.*?)\*\*\*/g, '<strong><em>$1</em></strong>')
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\*(.*?)\*/g, '<em>$1</em>')
-    // Code blocks
-    .replace(/```[\w]*\n([\s\S]*?)```/g, '<pre><code>$1</code></pre>')
-    // Inline code
-    .replace(/`(.*?)`/g, '<code>$1</code>')
-    // Blockquotes
-    .replace(/^> (.*$)/gm, '<blockquote>$1</blockquote>')
-    // Unordered lists
-    .replace(/^- (.*$)/gm, '<li>$1</li>')
-    // Ordered lists
-    .replace(/^\d+\. (.*$)/gm, '<li>$1</li>')
-    // Wrap consecutive li elements in ul
-    .replace(/((<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>')
-    // Paragraphs (lines that aren't already wrapped)
-    .replace(/^(?!<[hupob]|<li|<ul|<\/)(.*\S.*)$/gm, '<p>$1</p>')
-    // Clean up empty paragraphs
-    .replace(/<p><\/p>/g, '')
-    // Merge consecutive blockquotes
-    .replace(/<\/blockquote>\n<blockquote>/g, '<br/>');
+  const result = remark().use(remarkGfm).use(remarkHtml).processSync(content);
+  const html = addHeadingIds(String(result));
 
   return <div dangerouslySetInnerHTML={{ __html: html }} />;
 }
