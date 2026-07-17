@@ -1,0 +1,111 @@
+/*
+ * ============================================================
+ *  Design Tokens — sambitsarkar.com
+ * ============================================================
+ *
+ *  Single source of truth for colors, typography, spacing,
+ *  and layout values. All component styles in globals.css
+ *  reference these variables.
+ *
+ *  Naming convention:
+ *    --color-*    → palette & semantic colors
+ *    --font-*     → font families
+ *    --text-*     → font sizes (ascending scale)
+ *    --weight-*   → font weights
+ *    --leading-*  → line heights
+ *    --tracking-* → letter spacing
+ *    --space-*    → spacing / padding / gap
+ *    --radius-*   → border radii
+ *    --width-*    → max-width constraints
+ *
+ * ============================================================
+ */
+
+:root {
+
+  /* ---- Colors (light mode) ---- */
+  --color-bg:         #fafafa;   /* page background               */
+  --color-fg:         #111111;   /* primary text                   */
+  --color-muted:      #6b7280;   /* secondary text, captions       */
+  --color-accent:     #1a1a2e;   /* accent / emphasis              */
+  --color-border:     #e5e7eb;   /* borders, dividers              */
+  --color-card:       #ffffff;   /* card / elevated surface        */
+  --color-error:      #ef4444;   /* error messages                 */
+
+  /* ---- Font families ---- */
+  --font-sans:        var(--font-inter), system-ui, sans-serif;
+  --font-mono:        var(--font-geist-mono), ui-monospace, monospace;
+
+  /* ---- Font sizes (modular scale) ---- */
+  --text-xs:          0.8125rem; /* 13px — meta, badges, tags      */
+  --text-sm:          0.875rem;  /* 14px — code blocks              */
+  --text-base:        1.25rem;   /* 20px — body, nav, cards, prose  */
+  --text-md:          1.25rem;   /* 20px — card titles              */
+  --text-lg:          1.375rem;  /* 22px — h4, subsection heads     */
+  --text-xl:          1.5rem;    /* 24px — intro paragraphs         */
+  --text-2xl:         1.625rem;  /* 26px — h3, page subtitle        */
+  --text-3xl:         1.875rem;  /* 30px — h2, section headings     */
+  --text-4xl:         2.5rem;    /* 40px — prose h1                 */
+  --text-5xl:         3rem;      /* 48px — page title               */
+
+  /* ---- Font weights ---- */
+  --weight-normal:    400;
+  --weight-medium:    500;
+  --weight-semibold:  600;
+  --weight-bold:      700;
+
+  /* ---- Line heights ---- */
+  --leading-tight:    1.2;       /* headings                       */
+  --leading-snug:     1.3;       /* section headings               */
+  --leading-normal:   1.6;       /* code, compact text             */
+  --leading-relaxed:  1.7;       /* body copy                      */
+  --leading-loose:    1.8;       /* prose / article content        */
+
+  /* ---- Letter spacing ---- */
+  --tracking-tight:  -0.025em;   /* headings                       */
+  --tracking-normal:  0;         /* body                           */
+  --tracking-wide:    0.03em;    /* table headers                  */
+  --tracking-wider:   0.05em;    /* uppercase labels               */
+
+  /* ---- Spacing scale ---- */
+  --space-1:          0.125rem;  /* 2px                            */
+  --space-2:          0.25rem;   /* 4px                            */
+  --space-3:          0.375rem;  /* 6px                            */
+  --space-4:          0.5rem;    /* 8px                            */
+  --space-5:          0.625rem;  /* 10px                           */
+  --space-6:          0.75rem;   /* 12px                           */
+  --space-7:          0.875rem;  /* 14px                           */
+  --space-8:          1rem;      /* 16px                           */
+  --space-10:         1.25rem;   /* 20px                           */
+  --space-12:         1.5rem;    /* 24px                           */
+  --space-16:         2rem;      /* 32px                           */
+  --space-20:         2.5rem;    /* 40px                           */
+  --space-24:         3rem;      /* 48px                           */
+  --space-32:         4rem;      /* 64px                           */
+
+  /* ---- Border radius ---- */
+  --radius-sm:        0.25rem;   /* badges, tags, inline code      */
+  --radius-md:        0.375rem;  /* inputs, buttons, small cards   */
+  --radius-lg:        0.5rem;    /* cards, code blocks             */
+  --radius-full:      50%;       /* circles (step numbers)         */
+
+  /* ---- Layout widths ---- */
+  --width-page:       56rem;     /* list pages (decisions, notes)  */
+  --width-content:    48rem;     /* detail / article pages         */
+  --width-prose:      65ch;      /* max prose line length          */
+  --width-form:       28rem;     /* form elements                  */
+  --width-table:      24rem;     /* comparison tables              */
+  --width-description:42rem;     /* intro paragraph max-width      */
+}
+
+/* ---- Colors (dark mode) ---- */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg:       #0a0a0a;
+    --color-fg:       #ededed;
+    --color-muted:    #9ca3af;
+    --color-accent:   #e2e8f0;
+    --color-border:   #27272a;
+    --color-card:     #18181b;
+  }
+}
