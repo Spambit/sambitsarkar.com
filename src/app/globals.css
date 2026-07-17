@@ -260,6 +260,14 @@ body {
   border-color: var(--color-fg);
 }
 
+.waitlist-input-error {
+  border-color: var(--color-error);
+}
+
+.waitlist-input-error:focus {
+  border-color: var(--color-error);
+}
+
 .waitlist-input::placeholder {
   color: var(--color-muted);
 }
