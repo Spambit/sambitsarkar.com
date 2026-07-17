@@ -391,7 +391,7 @@ body {
 .prose {
   max-width: var(--width-prose);
   line-height: var(--leading-loose);
-  font-size: var(--text-xl);
+  font-size: var(--text-lg);
 }
 
 .prose h1 {
@@ -418,7 +418,7 @@ body {
 }
 
 .prose h4 {
-  font-size: var(--text-lg);
+  font-size: var(--text-xl);
   font-weight: var(--weight-semibold);
   margin-top: var(--space-12);
   margin-bottom: var(--space-4);
