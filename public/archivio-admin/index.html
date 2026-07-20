@@ -41,6 +41,13 @@
     .status { position: fixed; top: 20px; right: 120px; font-size: 0.75rem; color: #71717a; line-height: 36px; }
     .empty { color: #52525b; font-style: italic; padding: 12px 0; }
     #error { background: #450a0a; border: 1px solid #7f1d1d; color: #fca5a5; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: none; }
+    .danger-btn { padding: 8px 16px; border-radius: 8px; border: 1px solid #7f1d1d; background: #450a0a; color: #fca5a5; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
+    .danger-btn:hover { background: #7f1d1d; }
+    .danger-btn.safe { border-color: #14532d; background: #052e16; color: #4ade80; }
+    .danger-btn.safe:hover { background: #14532d; }
+    .maint-banner { padding: 12px 16px; border-radius: 8px; display: flex; flex-direction: column; gap: 4px; }
+    .maint-banner.active { background: #450a0a; border: 1px solid #7f1d1d; }
+    .maint-banner.inactive { background: #052e16; border: 1px solid #14532d; color: #4ade80; }
   </style>
 </head>
 <body>
@@ -53,6 +60,7 @@
 
   <script>
     const API = localStorage.getItem('archivio_admin_api') || 'http://localhost:4900';
+    const ADMIN_KEY = localStorage.getItem('archivio_admin_key') || '';
 
     async function loadData() {
       const btn = document.querySelector('.refresh-btn');
@@ -63,7 +71,10 @@
       errorEl.style.display = 'none';
 
       try {
-        const res = await fetch(`${API}/admin/metrics`);
+        const headers = {};
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        const res = await fetch(`${API}/admin/metrics`, { headers });
+        if (res.status === 403) throw new Error('Invalid admin key. Set it: localStorage.setItem("archivio_admin_key", "your-key")');
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         render(data);
@@ -81,6 +92,14 @@
       const e = economics;
 
       document.getElementById('app').innerHTML = `
+        <!-- Service Health -->
+        <div class="section" id="health-section">
+          <div class="section-title">Service Health</div>
+          <div id="health-cards" class="grid" style="grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));">
+            <div class="card"><div class="card-label">Loading...</div></div>
+          </div>
+        </div>
+
         <!-- Summary Cards -->
         <div class="grid">
           <div class="card">
@@ -171,11 +190,113 @@
             </table>
           `}
         </div>
+
+        <!-- Danger Zone -->
+        <div class="section" id="danger-zone">
+          <div class="section-title" style="color:#f87171;border-color:#7f1d1d;">⚠ Danger Zone</div>
+          <div id="maintenance-status"></div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:12px;">
+            <button class="danger-btn" onclick="enableMaintenance()">🔒 Enable Maintenance</button>
+            <button class="danger-btn safe" onclick="disableMaintenance()">🔓 Disable Maintenance</button>
+          </div>
+          <div style="margin-top:16px;">
+            <label style="font-size:0.8rem;color:#71717a;">Custom message:</label>
+            <input type="text" id="maint-message" placeholder="Upgrading database. Back in 10 minutes." style="width:100%;padding:8px 12px;background:#1c1c22;border:1px solid #27272a;border-radius:6px;color:#e4e4e7;margin-top:4px;font-size:0.85rem;">
+            <label style="font-size:0.8rem;color:#71717a;margin-top:8px;display:block;">Estimated minutes:</label>
+            <input type="number" id="maint-minutes" placeholder="10" value="10" style="width:100px;padding:8px 12px;background:#1c1c22;border:1px solid #27272a;border-radius:6px;color:#e4e4e7;margin-top:4px;font-size:0.85rem;">
+          </div>
+        </div>
       `;
+
+      // Load maintenance status and health
+      loadMaintenanceStatus();
+      loadHealth();
     }
 
     function formatCostLabel(key) {
       return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+    }
+
+    // Service health check
+    async function loadHealth() {
+      try {
+        const headers = {};
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        const res = await fetch(`${API}/admin/health`, { headers });
+        const data = await res.json();
+        const el = document.getElementById('health-cards');
+        if (!el) return;
+
+        const statusIcon = { ok: '🟢', degraded: '🟡', error: '🔴' };
+        const statusColor = { ok: '#4ade80', degraded: '#fb923c', error: '#f87171' };
+
+        el.innerHTML = data.services.map(s => `
+          <div class="card" style="border-color:${statusColor[s.status]}22;">
+            <div class="card-label">${s.name}</div>
+            <div class="card-value" style="font-size:1.2rem;">${statusIcon[s.status]} ${s.status.toUpperCase()}</div>
+            <div class="card-sub">${s.latencyMs}ms${s.error ? ' — ' + s.error : ''}</div>
+          </div>
+        `).join('') + `
+          <div class="card">
+            <div class="card-label">Overall</div>
+            <div class="card-value" style="font-size:1.2rem;">${statusIcon[data.overall] || '⚪'} ${data.overall.toUpperCase()}</div>
+            <div class="card-sub">${new Date(data.timestamp).toLocaleTimeString()}</div>
+          </div>
+        `;
+      } catch (err) {
+        const el = document.getElementById('health-cards');
+        if (el) el.innerHTML = '<div class="card"><div class="card-value red">🔴 UNREACHABLE</div><div class="card-sub">Cannot connect to API</div></div>';
+      }
+    }
+
+    // Maintenance mode controls
+    async function loadMaintenanceStatus() {
+      try {
+        const headers = {};
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        const res = await fetch(`${API}/admin/maintenance`, { headers });
+        const state = await res.json();
+        const el = document.getElementById('maintenance-status');
+        if (el) {
+          if (state.enabled) {
+            el.innerHTML = `<div class="maint-banner active">
+              <span>🔴 MAINTENANCE MODE ACTIVE</span>
+              <span style="font-size:0.8rem;color:#fca5a5;">${state.message || ''}</span>
+              ${state.estimatedEndAt ? `<span style="font-size:0.75rem;color:#71717a;">Estimated end: ${new Date(state.estimatedEndAt).toLocaleTimeString()}</span>` : ''}
+            </div>`;
+          } else {
+            el.innerHTML = `<div class="maint-banner inactive"><span>🟢 Service is running normally</span></div>`;
+          }
+        }
+      } catch {}
+    }
+
+    async function enableMaintenance() {
+      const message = document.getElementById('maint-message')?.value || 'Scheduled maintenance. Back shortly.';
+      const minutes = parseInt(document.getElementById('maint-minutes')?.value) || 10;
+      if (!confirm(`Enable maintenance mode?\n\nMessage: "${message}"\nEstimated duration: ${minutes} minutes\n\nAll user requests will be blocked.`)) return;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        await fetch(`${API}/admin/maintenance`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ enabled: true, message, estimatedMinutes: minutes })
+        });
+        loadMaintenanceStatus();
+      } catch (err) { alert('Failed: ' + err.message); }
+    }
+
+    async function disableMaintenance() {
+      if (!confirm('Disable maintenance mode? Service will resume for all users.')) return;
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        await fetch(`${API}/admin/maintenance`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ enabled: false })
+        });
+        loadMaintenanceStatus();
+      } catch (err) { alert('Failed: ' + err.message); }
     }
 
     // Load on start
