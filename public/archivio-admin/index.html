@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Archivio Admin</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e4e4e7; padding: 24px; }
+    h1 { font-size: 1.5rem; margin-bottom: 4px; }
+    .subtitle { color: #71717a; font-size: 0.85rem; margin-bottom: 24px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 32px; }
+    .card { background: #1c1c22; border: 1px solid #27272a; border-radius: 12px; padding: 20px; }
+    .card-label { font-size: 0.75rem; color: #71717a; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+    .card-value { font-size: 1.75rem; font-weight: 700; }
+    .card-sub { font-size: 0.8rem; color: #71717a; margin-top: 4px; }
+    .green { color: #4ade80; }
+    .blue { color: #60a5fa; }
+    .orange { color: #fb923c; }
+    .red { color: #f87171; }
+    .purple { color: #a78bfa; }
+    .section { margin-bottom: 32px; }
+    .section-title { font-size: 1.1rem; font-weight: 600; margin-bottom: 12px; border-bottom: 1px solid #27272a; padding-bottom: 8px; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.85rem; }
+    th { text-align: left; padding: 8px 12px; color: #71717a; font-weight: 500; border-bottom: 1px solid #27272a; }
+    td { padding: 8px 12px; border-bottom: 1px solid #1c1c22; }
+    tr:hover td { background: #1c1c22; }
+    .badge { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 600; }
+    .badge-green { background: #052e16; color: #4ade80; }
+    .badge-blue { background: #172554; color: #60a5fa; }
+    .badge-orange { background: #431407; color: #fb923c; }
+    .badge-red { background: #450a0a; color: #f87171; }
+    .profit-bar { height: 8px; border-radius: 4px; background: #27272a; margin-top: 8px; overflow: hidden; }
+    .profit-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, #4ade80, #22c55e); }
+    .cost-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #1c1c22; font-size: 0.85rem; }
+    .cost-label { color: #a1a1aa; }
+    .cost-value { font-weight: 500; }
+    .refresh-btn { position: fixed; top: 20px; right: 24px; background: #3b82f6; color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; }
+    .refresh-btn:hover { background: #2563eb; }
+    .refresh-btn:disabled { background: #27272a; color: #71717a; cursor: not-allowed; }
+    .status { position: fixed; top: 20px; right: 120px; font-size: 0.75rem; color: #71717a; line-height: 36px; }
+    .empty { color: #52525b; font-style: italic; padding: 12px 0; }
+    #error { background: #450a0a; border: 1px solid #7f1d1d; color: #fca5a5; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; display: none; }
+  </style>
+</head>
+<body>
+  <h1>🏔 Archivio Admin</h1>
+  <p class="subtitle">Business metrics & user analytics</p>
+  <button class="refresh-btn" onclick="loadData()">↻ Refresh</button>
+  <span class="status" id="status"></span>
+  <div id="error"></div>
+  <div id="app">Loading...</div>
+
+  <script>
+    const API = localStorage.getItem('archivio_admin_api') || 'http://localhost:4900';
+
+    async function loadData() {
+      const btn = document.querySelector('.refresh-btn');
+      const status = document.getElementById('status');
+      const errorEl = document.getElementById('error');
+      btn.disabled = true;
+      status.textContent = 'Loading...';
+      errorEl.style.display = 'none';
+
+      try {
+        const res = await fetch(`${API}/admin/metrics`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+        render(data);
+        status.textContent = `Updated ${new Date().toLocaleTimeString()}`;
+      } catch (err) {
+        errorEl.textContent = `Failed to connect to ${API} — ${err.message}`;
+        errorEl.style.display = 'block';
+        status.textContent = 'Error';
+      }
+      btn.disabled = false;
+    }
+
+    function render(data) {
+      const { summary, plans, economics, reachOut } = data;
+      const e = economics;
+
+      document.getElementById('app').innerHTML = `
+        <!-- Summary Cards -->
+        <div class="grid">
+          <div class="card">
+            <div class="card-label">Total Users</div>
+            <div class="card-value">${summary.totalUsers}</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Active Subscribers</div>
+            <div class="card-value green">${summary.activeSubscribers}</div>
+            <div class="card-sub">${summary.conversionRate} conversion</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Trial Active</div>
+            <div class="card-value blue">${summary.trialActive}</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Trial Expired</div>
+            <div class="card-value orange">${summary.trialExpired}</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Total Storage</div>
+            <div class="card-value purple">${summary.totalStorageUsed}</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Monthly Revenue</div>
+            <div class="card-value green">${e.revenue.monthly}</div>
+            <div class="card-sub">${e.revenue.annual}/yr</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Monthly Cost</div>
+            <div class="card-value red">${e.costs.monthly}</div>
+          </div>
+          <div class="card">
+            <div class="card-label">Profit</div>
+            <div class="card-value green">${e.profit.monthly}</div>
+            <div class="card-sub">${e.profit.margin} margin</div>
+            <div class="profit-bar"><div class="profit-bar-fill" style="width:${e.profit.margin}"></div></div>
+          </div>
+        </div>
+
+        <!-- Revenue Breakdown -->
+        <div class="section">
+          <div class="section-title">Revenue Breakdown</div>
+          <div class="cost-row"><span class="cost-label">Personal Plan</span><span class="cost-value">${e.revenue.breakdown.personal}</span></div>
+          <div class="cost-row"><span class="cost-label">Family Plan</span><span class="cost-value">${e.revenue.breakdown.family}</span></div>
+        </div>
+
+        <!-- Cost Breakdown -->
+        <div class="section">
+          <div class="section-title">AWS Cost Breakdown</div>
+          ${Object.entries(e.costs.breakdown).map(([k, v]) => `
+            <div class="cost-row"><span class="cost-label">${formatCostLabel(k)}</span><span class="cost-value">${v}</span></div>
+          `).join('')}
+        </div>
+
+        <!-- Per-User Economics -->
+        <div class="section">
+          <div class="section-title">Per-User Economics</div>
+          <div class="cost-row"><span class="cost-label">Avg Revenue / Subscriber</span><span class="cost-value green">${e.perUser.avgRevenuePerUser}</span></div>
+          <div class="cost-row"><span class="cost-label">Avg Cost / User</span><span class="cost-value">${e.perUser.avgCostPerUser}</span></div>
+          <div class="cost-row"><span class="cost-label">Avg Storage / User</span><span class="cost-value">${e.perUser.avgStoragePerUser}</span></div>
+        </div>
+
+        <!-- Plan Distribution -->
+        <div class="section">
+          <div class="section-title">Plan Distribution</div>
+          <div class="grid" style="grid-template-columns: repeat(2, 1fr);">
+            <div class="card"><div class="card-label">Personal</div><div class="card-value">${plans.Personal}</div></div>
+            <div class="card"><div class="card-label">Family</div><div class="card-value">${plans.Family}</div></div>
+          </div>
+        </div>
+
+        <!-- Re-engagement Candidates -->
+        <div class="section">
+          <div class="section-title">Re-engagement Candidates (${reachOut.length})</div>
+          ${reachOut.length === 0 ? '<p class="empty">No expired trials yet</p>' : `
+            <table>
+              <thead><tr><th>Contact</th><th>Expired</th><th>Days Ago</th></tr></thead>
+              <tbody>
+                ${reachOut.slice(0, 20).map(u => `
+                  <tr>
+                    <td>${u.email || u.phone || u.uid}</td>
+                    <td>${u.expiredAt ? new Date(u.expiredAt).toLocaleDateString() : '—'}</td>
+                    <td><span class="badge ${u.daysSinceExpiry < 7 ? 'badge-orange' : 'badge-red'}">${u.daysSinceExpiry}d</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `}
+        </div>
+      `;
+    }
+
+    function formatCostLabel(key) {
+      return key.replace(/([A-Z])/g, ' $1').replace(/^./, s => s.toUpperCase());
+    }
+
+    // Load on start
+    loadData();
+    // Auto-refresh every 60s
+    setInterval(loadData, 60000);
+  </script>
+</body>
+</html>
