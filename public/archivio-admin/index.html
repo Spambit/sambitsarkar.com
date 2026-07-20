@@ -205,6 +205,22 @@
             <label style="font-size:0.8rem;color:#71717a;margin-top:8px;display:block;">Estimated minutes:</label>
             <input type="number" id="maint-minutes" placeholder="10" value="10" style="width:100px;padding:8px 12px;background:#1c1c22;border:1px solid #27272a;border-radius:6px;color:#e4e4e7;margin-top:4px;font-size:0.85rem;">
           </div>
+
+          <!-- Deployment / Rollback -->
+          <div style="margin-top:24px;padding-top:16px;border-top:1px solid #27272a;">
+            <div style="font-size:0.9rem;font-weight:600;margin-bottom:12px;">Deployment</div>
+            <div id="deploy-info" style="margin-bottom:12px;"></div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;">
+              <button class="danger-btn" onclick="loadCommits()">📋 Load Commits</button>
+              <button class="danger-btn" onclick="deployLatest()">🚀 Deploy Latest</button>
+              <button class="danger-btn" onclick="rollbackDeploy()">⏪ Rollback (Previous)</button>
+            </div>
+            <div id="commit-list" style="margin-top:12px;"></div>
+            <div style="margin-top:12px;display:flex;gap:8px;align-items:center;">
+              <input type="text" id="deploy-commit" placeholder="Commit hash (e.g. ce52320)" style="width:200px;padding:8px 12px;background:#1c1c22;border:1px solid #27272a;border-radius:6px;color:#e4e4e7;font-size:0.85rem;font-family:monospace;">
+              <button class="danger-btn" onclick="deployToCommit()">Deploy to this commit</button>
+            </div>
+          </div>
         </div>
       `;
 
@@ -297,6 +313,86 @@
         });
         loadMaintenanceStatus();
       } catch (err) { alert('Failed: ' + err.message); }
+    }
+
+    // Deployment controls
+    async function loadCommits() {
+      try {
+        const headers = {};
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        const res = await fetch(`${API}/admin/deploys`, { headers });
+        const data = await res.json();
+        const el = document.getElementById('commit-list');
+        if (!el) return;
+
+        if (data.commits && data.commits.length) {
+          el.innerHTML = `<table style="width:100%;font-size:0.8rem;">
+            <thead><tr><th>Hash</th><th>Message</th><th>Date</th><th></th></tr></thead>
+            <tbody>${data.commits.map(c => `
+              <tr>
+                <td style="font-family:monospace;">${c.hash.slice(0,7)}</td>
+                <td>${c.message}</td>
+                <td>${new Date(c.date).toLocaleDateString()}</td>
+                <td><button class="danger-btn" onclick="deployToSpecificCommit('${c.hash}')" style="padding:4px 8px;font-size:0.75rem;">Deploy</button></td>
+              </tr>
+            `).join('')}</tbody>
+          </table>`;
+        } else {
+          el.innerHTML = '<p class="empty">Deploy history not available (requires admin/deploys endpoint)</p>';
+        }
+
+        // Show current deploy info
+        if (data.current) {
+          document.getElementById('deploy-info').innerHTML = `
+            <div style="font-size:0.8rem;color:#71717a;">
+              Current: <span style="font-family:monospace;color:#60a5fa;">${data.current.hash?.slice(0,7) || 'unknown'}</span>
+              ${data.current.message ? ` — ${data.current.message}` : ''}
+              ${data.current.deployedAt ? ` (${new Date(data.current.deployedAt).toLocaleString()})` : ''}
+            </div>`;
+        }
+      } catch (err) {
+        document.getElementById('commit-list').innerHTML = `<p class="empty">Cannot load commits: ${err.message}</p>`;
+      }
+    }
+
+    async function deployLatest() {
+      if (!confirm('Deploy latest commit to production?\n\nThis will:\n1. Enable maintenance mode\n2. Deploy latest code\n3. Disable maintenance mode')) return;
+      await triggerDeploy('latest');
+    }
+
+    async function rollbackDeploy() {
+      if (!confirm('Rollback to previous deployment?\n\nThis will revert to the last known good deploy.')) return;
+      await triggerDeploy('rollback');
+    }
+
+    function deployToSpecificCommit(hash) {
+      if (!confirm(`Deploy commit ${hash.slice(0,7)} to production?`)) return;
+      triggerDeploy(hash);
+    }
+
+    function deployToCommit() {
+      const hash = document.getElementById('deploy-commit')?.value?.trim();
+      if (!hash) return alert('Enter a commit hash');
+      if (!confirm(`Deploy commit ${hash} to production?`)) return;
+      triggerDeploy(hash);
+    }
+
+    async function triggerDeploy(target) {
+      try {
+        const headers = { 'Content-Type': 'application/json' };
+        if (ADMIN_KEY) headers['x-admin-key'] = ADMIN_KEY;
+        const res = await fetch(`${API}/admin/deploy`, {
+          method: 'POST', headers,
+          body: JSON.stringify({ target })
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert(`Deploy failed: ${data.error.message}`);
+        } else {
+          alert(`Deploy triggered: ${data.message || 'In progress...'}\n\nCheck back in ~30 seconds.`);
+          setTimeout(loadCommits, 5000);
+        }
+      } catch (err) { alert('Deploy failed: ' + err.message); }
     }
 
     // Load on start

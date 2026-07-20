@@ -1,0 +1,35 @@
+# Sync admin portal from photo-backup repo to this website
+# Triggers: manual (run when admin dashboard changes)
+name: Sync Admin Portal
+
+on:
+  workflow_dispatch:
+  repository_dispatch:
+    types: [admin-portal-updated]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Fetch latest admin dashboard
+        run: |
+          curl -sL "https://raw.githubusercontent.com/Spambit/photo-backup/main/admin/index.html" \
+            -o public/archivio-admin/index.html
+
+      - name: Check for changes
+        id: diff
+        run: |
+          git diff --quiet public/archivio-admin/index.html || echo "changed=true" >> $GITHUB_OUTPUT
+
+      - name: Commit and push
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add public/archivio-admin/index.html
+          git commit -m "chore: sync admin dashboard from photo-backup"
+          git push
